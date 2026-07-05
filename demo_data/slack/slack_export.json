@@ -1,0 +1,186 @@
+{
+  "workspace": "ProjectVelocity",
+  "export_date": "2025-06-30",
+  "channels": [
+    {
+      "name": "engineering",
+      "messages": [
+        {
+          "ts": "2024-11-15T09:12:00",
+          "user": "alex_chen",
+          "text": "heads up - we hit some weird timeouts on the payments service yesterday during load testing. traced it back to the connection pool being maxed out. increased pool size from 10 to 50 and it fixed it. will document this."
+        },
+        {
+          "ts": "2024-11-15T09:45:00",
+          "user": "priya_sharma",
+          "text": "good catch alex. we should probably monitor this more closely. refund endpoints in particular seem to be slow under any real load."
+        },
+        {
+          "ts": "2024-11-15T10:02:00",
+          "user": "alex_chen",
+          "text": "yeah the refund handler is doing synchronous DB writes which is killing throughput. i filed a jira ticket for it - PERF-231. not blocking anything right now so low priority"
+        },
+        {
+          "ts": "2024-11-30T14:22:00",
+          "user": "tom_wright",
+          "text": "quick update - we reviewed PERF-231 in the architecture sync. decided not to fix the refund latency issue this quarter. current p95 is around 4-5s which is acceptable for now."
+        },
+        {
+          "ts": "2024-12-10T11:00:00",
+          "user": "priya_sharma",
+          "text": "kicked off evaluating kafka for our event processing pipeline. it would solve a lot of our async messaging issues."
+        },
+        {
+          "ts": "2024-12-12T15:30:00",
+          "user": "tom_wright",
+          "text": "priya - checked with devops. we don't have anyone who can run kafka in production. would need to hire or train someone. parking this for now, documenting in INFRA-45."
+        },
+        {
+          "ts": "2025-04-03T09:00:00",
+          "user": "priya_sharma",
+          "text": "welcome maria! excited to have you on the team. everyone say hi to @maria_costa who joins us from stripe as our new senior backend engineer."
+        },
+        {
+          "ts": "2025-04-03T09:15:00",
+          "user": "maria_costa",
+          "text": "hey everyone! happy to be here. spent the last 3 years at stripe building and running their kafka-based event infrastructure. excited to dig into what you're all working on!"
+        },
+        {
+          "ts": "2025-04-03T09:22:00",
+          "user": "alex_chen",
+          "text": "welcome maria! we actually evaluated kafka a few months back but shelved it. might be worth revisiting now that you're here!"
+        },
+        {
+          "ts": "2025-06-10T10:45:00",
+          "user": "priya_sharma",
+          "text": "sprint planning: PAY-89 is in this sprint - adding the new refund API endpoint. should be straightforward, maybe 3-4 days."
+        },
+        {
+          "ts": "2025-06-10T11:00:00",
+          "user": "tom_wright",
+          "text": "sounds good. just make sure the new endpoint meets the same perf standards as the rest of payments."
+        },
+        {
+          "ts": "2025-06-10T11:05:00",
+          "user": "priya_sharma",
+          "text": "yep will do. any specific SLA targets i should be aware of?"
+        }
+      ]
+    },
+    {
+      "name": "sales",
+      "messages": [
+        {
+          "ts": "2025-02-14T16:30:00",
+          "user": "james_kim",
+          "text": "just got off a call with GlobalPay, our biggest enterprise client. they're very interested in expanding usage but had one hard requirement: any refund processing needs to complete in under 2 seconds, end to end. it's a contractual SLA they have with their own customers."
+        },
+        {
+          "ts": "2025-02-14T16:45:00",
+          "user": "sarah_lee",
+          "text": "2 seconds is tight. do we even know what our current refund latency is?"
+        },
+        {
+          "ts": "2025-02-14T17:00:00",
+          "user": "james_kim",
+          "text": "not sure. i'll flag this to the product team. the GlobalPay deal is worth ~$400k ARR so we need to take this seriously."
+        },
+        {
+          "ts": "2025-02-15T09:30:00",
+          "user": "sarah_lee",
+          "text": "flagging to #product-eng - GlobalPay has a hard 2-second SLA requirement on refund processing. should we loop in engineering to validate we can meet this?"
+        },
+        {
+          "ts": "2025-03-20T14:00:00",
+          "user": "james_kim",
+          "text": "update on GlobalPay - they're moving forward with a smaller pilot first. refund latency is still on their radar as a key acceptance criterion before they expand."
+        },
+        {
+          "ts": "2025-05-01T10:00:00",
+          "user": "sarah_lee",
+          "text": "GlobalPay pilot going well. they haven't stressed the refund endpoint yet - mostly testing happy path transactions. latency question will come up when they go to production volume."
+        }
+      ]
+    },
+    {
+      "name": "product-eng",
+      "messages": [
+        {
+          "ts": "2025-02-15T10:00:00",
+          "user": "sarah_lee",
+          "text": "GlobalPay requires refund processing under 2 seconds. this is a hard SLA for a potential $400k deal. engineering needs to validate current performance before we commit."
+        },
+        {
+          "ts": "2025-02-15T10:30:00",
+          "user": "tom_wright",
+          "text": "we don't have current numbers but i recall there was a ticket about refund performance last quarter. need to look it up. will get back to you."
+        },
+        {
+          "ts": "2025-02-15T15:00:00",
+          "user": "tom_wright",
+          "text": "found it - PERF-231, filed by alex in november. we closed it as low priority since current latency was 'acceptable'. didn't realize we had an enterprise SLA dependency on it. will discuss in architecture sync."
+        },
+        {
+          "ts": "2025-02-20T14:00:00",
+          "user": "tom_wright",
+          "text": "architecture sync update: agreed to monitor refund latency more closely. no immediate fix planned - will revisit if it becomes blocking. GlobalPay SLA noted but not escalated."
+        }
+      ]
+    },
+    {
+      "name": "customer-support",
+      "messages": [
+        {
+          "ts": "2025-01-08T11:00:00",
+          "user": "nina_patel",
+          "text": "seeing a spike in customer complaints about slow refunds. about 8 tickets this week. customers saying refunds take 5-10 seconds or sometimes time out entirely."
+        },
+        {
+          "ts": "2025-01-08T11:30:00",
+          "user": "nina_patel",
+          "text": "engineering - is there anything going on with the refund endpoint? customers are frustrated."
+        },
+        {
+          "ts": "2025-01-08T14:00:00",
+          "user": "alex_chen",
+          "text": "thanks nina. we see occasional latency spikes but nothing that looks like an outage. will keep an eye on it."
+        },
+        {
+          "ts": "2025-03-22T09:00:00",
+          "user": "nina_patel",
+          "text": "refund complaint tickets are accumulating again. up to 14 this month. customers reporting timeouts and delays. this is becoming a pattern."
+        },
+        {
+          "ts": "2025-03-22T09:45:00",
+          "user": "tom_wright",
+          "text": "noted nina. our monitoring doesn't show anything alarming but will investigate. refund latency is on our backlog."
+        },
+        {
+          "ts": "2025-04-10T16:00:00",
+          "user": "nina_patel",
+          "text": "update: 6 more refund timeout tickets this week. customers are starting to escalate to chargebacks. this is a revenue risk."
+        }
+      ]
+    },
+    {
+      "name": "general",
+      "messages": [
+        {
+          "ts": "2025-04-03T09:30:00",
+          "user": "tom_wright",
+          "text": "team - quick intro: maria costa is joining us today as senior backend. she comes from stripe where she ran their kafka infrastructure. welcome maria!"
+        },
+        {
+          "ts": "2025-04-03T09:35:00",
+          "user": "maria_costa",
+          "text": "thanks tom! yes, spent 3 years at stripe building kafka-based event pipelines at massive scale. also worked on payment processing infrastructure so should be directly applicable here. looking forward to contributing!"
+        },
+        {
+          "ts": "2025-06-01T17:00:00",
+          "user": "james_kim",
+          "text": "great Q2 everyone! GlobalPay pilot is progressing well. they move to full production next quarter which is when they'll stress test our refund flow. all eyes on performance."
+        }
+      ]
+    }
+  ]
+}

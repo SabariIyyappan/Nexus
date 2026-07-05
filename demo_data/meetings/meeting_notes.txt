@@ -1,0 +1,171 @@
+================================================================================
+MEETING: Architecture Sync — Weekly
+DATE: 2024-11-30
+ATTENDEES: tom_wright, alex_chen, priya_sharma
+================================================================================
+
+AGENDA: Review open technical decisions
+
+DISCUSSION:
+
+1. PERF-231 Review (Refund Latency)
+   alex_chen raised PERF-231 — refund endpoint latency issue discovered during
+   load testing. Current p95 is 4-5 seconds. Root cause is synchronous database
+   writes in the refund handler.
+
+   DECISION: Close as low priority. Current latency is acceptable for our current
+   customer base. Engineering bandwidth is needed for Q4 feature work. Will revisit
+   if latency becomes a customer-facing issue.
+
+   ACTION: alex_chen to add monitoring alert if p95 exceeds 8 seconds.
+   OWNER: alex_chen
+   STATUS: Closed — will not fix this quarter
+
+2. Connection Pool Limits
+   Related to PERF-231. Temporary workaround of increasing pool to 50 is holding.
+   No action needed beyond monitoring.
+
+NEXT STEPS:
+- alex_chen: add latency monitoring for refund endpoint
+- team: revisit PERF-231 in Q1 if customer complaints increase
+
+
+================================================================================
+MEETING: Enterprise Client Requirements Review
+DATE: 2025-02-18
+ATTENDEES: tom_wright, priya_sharma, sarah_lee, james_kim
+================================================================================
+
+AGENDA: GlobalPay deal requirements — can we meet their SLA?
+
+BACKGROUND:
+james_kim from sales raised that GlobalPay (potential $400k ARR enterprise client)
+has a contractual requirement: refund processing must complete in under 2 seconds,
+end to end, including database writes and response.
+
+DISCUSSION:
+
+tom_wright: Our current refund latency is 4-5 seconds p95, sometimes spiking to
+10+ seconds under load. We have an open ticket (PERF-231) that we closed as wontfix
+last quarter. We cannot currently meet the 2-second SLA.
+
+james_kim: This is a hard requirement for GlobalPay. Non-negotiable. If we can't
+commit, we may lose the deal.
+
+priya_sharma: To hit 2 seconds we need to make the refund handler asynchronous.
+Significant refactoring of payments/refund.py required. Estimate: 3-4 weeks of
+engineering work.
+
+sarah_lee: Can we do a phased approach? Commit to the SLA in 60 days?
+
+DECISION: Do not block the GlobalPay deal on this. Sales team to communicate that
+refund performance improvements are "on our roadmap." Engineering to prioritize
+async refund handler in Q2 planning.
+
+ACTION: tom_wright to add refund performance as Q2 engineering priority.
+ACTION: james_kim to manage GlobalPay expectations — 60-day commitment.
+RISK NOTED: If GlobalPay goes to production volume before fix is shipped, we will
+breach their SLA. This is a contractual and revenue risk.
+
+
+================================================================================
+MEETING: Infrastructure Evaluation — Kafka
+DATE: 2024-12-12
+ATTENDEES: tom_wright, priya_sharma, devops_lead (external)
+================================================================================
+
+AGENDA: Should we adopt Kafka for event processing?
+
+SUMMARY OF EVALUATION:
+priya_sharma led a 2-week evaluation of Kafka for our async event processing needs.
+Kafka would solve our synchronous messaging bottlenecks including the refund handler.
+
+PROS:
+- Solves async processing needs for payments pipeline
+- Industry standard for high-throughput event streaming
+- Would allow refund processing to become truly asynchronous (solving PERF-231)
+- Decouples services, improves resilience
+
+CONS:
+- Significant operational complexity
+- Requires Kafka expertise to run in production (cluster management, monitoring)
+- No one on current team has Kafka production experience
+- Training time: estimated 3-4 months to get team up to speed
+
+DECISION: Do not adopt Kafka at this time. Primary blocker is operational expertise.
+We have no one on the team who can own a Kafka cluster in production.
+Document in INFRA-45 as rejected. Revisit if team expertise changes.
+
+OWNER: tom_wright
+STATUS: Rejected — revisit if expertise situation changes
+
+
+================================================================================
+MEETING: Q2 Sprint Planning
+DATE: 2025-06-09
+ATTENDEES: tom_wright, priya_sharma, alex_chen, maria_costa
+================================================================================
+
+AGENDA: Plan Q2 sprint — PAY-89 and PAY-102 prioritization
+
+DISCUSSION:
+
+1. PAY-89 — New Refund API Endpoint
+   priya_sharma to lead implementation of new refund API endpoint.
+   Estimate: 3-4 days for basic implementation.
+
+   tom_wright: Any performance requirements we should factor in?
+   priya_sharma: Not explicitly defined yet. Will use same patterns as existing
+   payments endpoints.
+
+   NOTE: No one raised the GlobalPay SLA requirement in this meeting.
+   NOTE: PERF-231 (refund latency issue) was not referenced.
+   NOTE: The 14 open support tickets about refund timeouts were not mentioned.
+
+   DECISION: Proceed with PAY-89. Default performance targets.
+   OWNER: priya_sharma
+
+2. Kafka Revisit — INFRA-89
+   alex_chen raised that maria_costa joining the team resolves the original blocker
+   for INFRA-45 (Kafka rejected due to no expertise). Maria has 3 years Kafka
+   experience at Stripe.
+
+   maria_costa: Happy to own this. Can have a proposal ready in 2 weeks.
+
+   DECISION: Reopen Kafka evaluation. maria_costa to own.
+   OWNER: maria_costa
+
+
+================================================================================
+MEETING: Engineering Retrospective — Q1 2025
+DATE: 2025-04-01
+ATTENDEES: tom_wright, priya_sharma, alex_chen, nina_patel
+================================================================================
+
+AGENDA: What went well, what didn't, process improvements
+
+DISCUSSION:
+
+nina_patel (support): We received 14 refund timeout tickets in Q1. This is a
+significant increase. Customers are frustrated. Some are initiating chargebacks.
+Engineering team seems unaware of the volume.
+
+alex_chen: We have PERF-231 from November but closed it as low priority. Sounds
+like it should be higher priority than we thought.
+
+tom_wright: The challenge is we don't connect support ticket volume to engineering
+priority well. By the time support escalates, the technical context is lost.
+
+priya_sharma: We also discussed the GlobalPay SLA requirement in February but it
+hasn't made it into sprint planning. These threads are disconnected.
+
+AGREED PROBLEMS:
+- Engineering doesn't see support ticket patterns until they escalate
+- Sales requirements (like GlobalPay SLA) don't always reach engineering
+- Technical decisions made months ago (PERF-231) lose context over time
+- We re-discover the same problems repeatedly
+
+ACTION: Create a process for support → engineering escalation.
+ACTION: Product to maintain a "live requirements" doc for enterprise clients.
+NOTE: Team recognizes this is fundamentally an institutional memory problem.
+      Information exists but isn't connected across teams.

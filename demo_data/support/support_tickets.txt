@@ -1,0 +1,192 @@
+SUPPORT TICKET LOG — ProjectVelocity Platform
+Export Date: 2025-06-30
+================================================================================
+
+TICKET #1041
+Date: 2025-01-08
+Customer: Acme Corp
+Severity: Medium
+Subject: Refund processing is extremely slow
+Description: Our customers are experiencing delays when processing refunds through
+your API. Refund requests are taking between 6-10 seconds to complete. This is
+causing frustration for our end users who expect near-instant confirmation.
+Agent: nina_patel
+Status: Closed - No Resolution (engineering deprioritized)
+Tags: refund, latency, slow
+
+TICKET #1067
+Date: 2025-01-22
+Customer: BrightPay Inc
+Severity: Medium
+Subject: Refund API timeout error
+Description: We are receiving timeout errors when calling the refund endpoint
+under moderate load (>20 concurrent refund requests). Error: Connection pool
+exhausted after 30 seconds. This is blocking our settlement process.
+Agent: nina_patel
+Status: Closed - Workaround (reduce concurrent requests)
+Tags: refund, timeout, connection-pool
+
+TICKET #1089
+Date: 2025-02-03
+Customer: FastCheckout Ltd
+Severity: High
+Subject: Multiple refund timeouts causing customer disputes
+Description: We've had 12 customers open disputes with their banks because refunds
+timed out on your end but we had no way to confirm status. Our contract requires
+refund processing under 3 seconds. We are currently seeing 8-12 second responses.
+Agent: nina_patel
+Status: Open - Escalated
+Tags: refund, timeout, dispute, SLA, contract
+
+TICKET #1102
+Date: 2025-02-14
+Customer: RetailOne
+Severity: Medium
+Subject: Refund latency spiking during peak hours
+Description: During business hours (9am-5pm EST) refund processing is significantly
+slower than off-peak. Seeing p95 of 12 seconds. Off-peak is 3-4 seconds. Something
+is clearly contending during peak load. Payments team should investigate the refund
+handler performance.
+Agent: nina_patel
+Status: Open
+Tags: refund, latency, peak-hours
+
+TICKET #1118
+Date: 2025-02-28
+Customer: MegaStore Group
+Severity: High
+Subject: Refund endpoint returning 504 Gateway Timeout
+Description: Our integration is receiving 504 Gateway Timeout errors on the refund
+endpoint. This happens consistently when we process more than 10 refunds per minute.
+We are losing revenue because failed refunds are not being retried automatically.
+Agent: nina_patel
+Status: Open - Engineering ticket filed (SUP-867)
+Tags: refund, timeout, 504, gateway
+
+TICKET #1134
+Date: 2025-03-10
+Customer: QuickPay Solutions
+Severity: High
+Subject: Refund processing SLA breach — escalating to account manager
+Description: We have a documented SLA with your company requiring refund processing
+under 2 seconds. We have been consistently experiencing 5-8 second refund times for
+the past 6 weeks. We are formally escalating this. Our account manager James Kim
+has been notified. We need a written commitment on when this will be resolved.
+Agent: nina_patel
+Status: Open - Account manager engaged
+Tags: refund, SLA, escalation, globalpay-tier
+
+TICKET #1151
+Date: 2025-03-15
+Customer: GlobalPay (Pilot)
+Severity: Critical
+Subject: Refund latency exceeds contractual SLA of 2 seconds
+Description: We are in pilot phase with your platform. Our contract with your company
+specifies refund processing must complete within 2 seconds end-to-end. In our testing
+we are consistently seeing 4-8 second response times on the refund API endpoint.
+This is a blocker for us expanding beyond the pilot. Our technical contact is
+james_kim on your sales team. Please escalate to engineering leadership immediately.
+Agent: nina_patel
+Status: Critical - Escalated to james_kim and tom_wright
+Tags: refund, SLA, globalpay, critical, latency, contract, pilot
+
+TICKET #1169
+Date: 2025-03-22
+Customer: SwiftTrans Inc
+Severity: Medium
+Subject: Slow refund response affecting customer satisfaction scores
+Description: Our CSAT scores have dropped since integrating your refund API. Customers
+are waiting too long for refund confirmation. We track refund latency and your p99
+is 14 seconds which is unacceptable for consumer-facing applications.
+Agent: nina_patel
+Status: Open
+Tags: refund, latency, csat, consumer
+
+TICKET #1184
+Date: 2025-04-01
+Customer: ClearFunds
+Severity: High
+Subject: Refund timeouts causing chargeback disputes
+Description: We have had 8 chargebacks this month directly attributable to refund
+timeouts on your platform. When your refund API times out, we have no confirmation
+and cannot update our customers, who then dispute the transaction. Each chargeback
+costs us $35 in fees. We need immediate resolution or will need to evaluate alternatives.
+Agent: nina_patel
+Status: Open - Chargeback risk escalated
+Tags: refund, timeout, chargeback, revenue-risk
+
+TICKET #1201
+Date: 2025-04-10
+Customer: PayStream Co
+Severity: High
+Subject: Refund processing completely broken during this morning's peak
+Description: Between 9am-11am EST today, refund processing was essentially unusable.
+Latency was 20-30 seconds and many requests timed out completely. This affected
+approximately 340 of our customers. This is our 4th escalation on this same issue.
+Something needs to change in the refund handler fundamentally — this is not a
+temporary spike, it's a systemic issue.
+Agent: nina_patel
+Status: Open - Fourth escalation on same issue
+Tags: refund, timeout, systemic, peak-hours, escalation
+
+TICKET #1218
+Date: 2025-04-15
+Customer: Acme Corp (repeat)
+Severity: High
+Subject: Still experiencing refund timeouts — following up on ticket #1041
+Description: We first reported this in January (ticket #1041). We were told it was
+being monitored. It's now April and the problem is worse. Refund timeouts happen
+daily. We are evaluating moving to a competitor. Please provide a concrete timeline
+for fixing the refund latency issue.
+Agent: nina_patel
+Status: Open - Customer retention risk
+Tags: refund, timeout, repeat-customer, churn-risk
+
+TICKET #1235
+Date: 2025-05-02
+Customer: BridgePay
+Severity: Medium
+Subject: Refund API response times inconsistent
+Description: We notice refund response times vary wildly from 1 second to 15 seconds
+with no clear pattern. Other payment endpoints are consistently fast. The refund
+handler seems to be architecturally different in how it processes requests.
+Agent: nina_patel
+Status: Open
+Tags: refund, latency, inconsistent
+
+TICKET #1252
+Date: 2025-05-20
+Customer: NovaPay
+Severity: High
+Subject: Refund performance degradation noticed since March
+Description: We've been tracking refund API performance since our integration in
+January. Something changed around March - response times increased from 2-3 seconds
+to 5-8 seconds consistently. Did something change in the refund handler? We need
+this back under 2 seconds for our product to work correctly.
+Agent: nina_patel
+Status: Open - Trend analysis requested from engineering
+Tags: refund, latency, regression, performance-degradation
+
+TICKET #1271
+Date: 2025-06-05
+Customer: QuickSettle
+Severity: High
+Subject: Connection pool exhausted error on refund endpoint — 3rd time this month
+Description: Third time this month we've received "connection pool exhausted" errors
+on the refund endpoint. Your workaround of reducing concurrent requests is not viable
+for our volume. We process 500+ refunds per hour during peak. Need a real fix.
+Agent: nina_patel
+Status: Open - Connection pool issue recurring
+Tags: refund, timeout, connection-pool, recurring
+
+================================================================================
+SUPPORT SUMMARY:
+Total refund-related tickets: 14
+Open tickets: 11
+Critical tickets: 1 (GlobalPay SLA breach)
+Chargeback risk tickets: 2
+Customer churn risk: 3 accounts
+Primary agent: nina_patel
+Most common tags: refund, latency, timeout, SLA
+Pattern: Systemic refund handler performance issue — same root cause as PERF-231
+================================================================================
