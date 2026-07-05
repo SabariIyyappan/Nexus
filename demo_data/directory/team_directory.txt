@@ -1,0 +1,49 @@
+PROJECTVELOCITY — TEAM DIRECTORY
+================================
+Internal contact and expertise directory for the ProjectVelocity product team.
+Use this to find the right person to contact about a topic.
+
+---
+
+Name: Maria Costa
+Email: maria.costa@projectvelocity.com
+Slack: @maria_costa
+Role: Senior Backend Engineer
+Joined: April 2025 (previously 3 years at Stripe)
+Expertise: Kafka, event-driven infrastructure, event streaming pipelines, payment processing infrastructure, distributed systems. Ran Kafka-based event infrastructure at Stripe at massive scale. Primary contact for anything Kafka or async event processing.
+
+Name: Alex Chen
+Email: alex.chen@projectvelocity.com
+Slack: @alex_chen
+Role: Backend Engineer
+Expertise: Payments service, refund handler, database connection pools, performance debugging, load testing. Diagnosed and fixed the payments connection pool exhaustion (increased pool from 10 to 50). Filed PERF-231. Primary contact for payments latency and connection pool issues.
+
+Name: Priya Sharma
+Email: priya.sharma@projectvelocity.com
+Slack: @priya_sharma
+Role: Engineering Lead
+Expertise: Payments v2 API, sprint planning, refund API endpoint (PAY-89). Owns the current refund API work. Primary contact for the v2 payments API.
+
+Name: Tom Wright
+Email: tom.wright@projectvelocity.com
+Slack: @tom_wright
+Role: Engineering Manager / Architect
+Expertise: Architecture reviews, technical decisions, infrastructure trade-offs. Decision owner on INFRA-45 (Kafka evaluation) and the PERF-231 wontfix call. Primary contact for architecture decisions.
+
+Name: Nina Patel
+Email: nina.patel@projectvelocity.com
+Slack: @nina_patel
+Role: Customer Support Lead
+Expertise: Customer complaints, support ticket trends, refund timeout reports. Tracks the refund timeout ticket volume. Primary contact for customer-reported issues and support escalations.
+
+Name: James Kim
+Email: james.kim@projectvelocity.com
+Slack: @james_kim
+Role: Enterprise Sales
+Expertise: GlobalPay account, enterprise SLA requirements, client relationships. Owns the GlobalPay relationship and its 2-second refund SLA requirement. Primary contact for enterprise client commitments.
+
+Name: Sarah Lee
+Email: sarah.lee@projectvelocity.com
+Slack: @sarah_lee
+Role: Product Manager
+Expertise: Product requirements, cross-team coordination, SLA validation. Flags client requirements to engineering. Primary contact for product requirements and prioritization.

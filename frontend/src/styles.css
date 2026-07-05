@@ -211,9 +211,20 @@ body {
 /* ── Main area: bounded graph box + insight panel ────────────────────────*/
 .main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 400px;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   min-height: 0;
+}
+/* When the chat dock is open, reserve space on the right so the constellation
+   and footer reflow beside it instead of sitting underneath it. */
+.app.chat-open .main,
+.app.chat-open .footer-row {
+  margin-right: 396px;
+  transition: margin-right 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.app .main,
+.app .footer-row {
+  transition: margin-right 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 /* The graph lives INSIDE this box and is clipped to it, so it can never
    drift over the surrounding panels. */
@@ -467,10 +478,477 @@ body {
 }
 
 /* Thin scrollbars inside glass */
-.insight-body::-webkit-scrollbar {
+.insight-body::-webkit-scrollbar,
+.chat-scroll::-webkit-scrollbar,
+.ingest-log::-webkit-scrollbar {
   width: 6px;
 }
-.insight-body::-webkit-scrollbar-thumb {
+.insight-body::-webkit-scrollbar-thumb,
+.chat-scroll::-webkit-scrollbar-thumb,
+.ingest-log::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
+}
+
+/* ── Ingest button (header) ──────────────────────────────────────────────*/
+.ingest-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-hi);
+  cursor: pointer;
+}
+.ingest-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+.ingest-btn-glyph {
+  color: var(--type-contradiction);
+}
+
+/* ── Legend, vertical, inside the graph box ──────────────────────────────*/
+.legend--graph {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(9, 13, 25, 0.55);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Chat: floating action button (closed) ───────────────────────────────*/
+.chat-fab {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 20px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--src-slack) 45%, transparent);
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.28), rgba(56, 189, 248, 0.12));
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 34px -8px rgba(56, 189, 248, 0.6);
+  animation: cardIn 0.4s ease;
+}
+.chat-fab:hover {
+  transform: translateY(-1px);
+}
+.chat-fab-glyph {
+  font-size: 15px;
+  color: var(--src-slack);
+}
+
+/* ── Chat dock (open) ────────────────────────────────────────────────────*/
+.chat-dock {
+  position: fixed;
+  top: 78px;
+  right: 18px;
+  bottom: 18px;
+  width: 378px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: cardIn 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--glass-border);
+  flex-shrink: 0;
+}
+.chat-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.chat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--src-slack);
+  box-shadow: 0 0 10px var(--src-slack);
+}
+.chat-close {
+  background: none;
+  border: none;
+  color: var(--text-mid);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.chat-close:hover {
+  color: #fff;
+}
+.chat-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-empty {
+  color: var(--text-mid);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.chat-empty b {
+  color: var(--text-hi);
+}
+.chat-empty p {
+  margin-top: 6px;
+}
+.chat-suggest-label {
+  margin: 14px 0 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-lo);
+}
+.chat-suggests {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chat-suggest {
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text-hi);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.chat-suggest:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.chat-suggest:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Message bubbles */
+.chat-msg {
+  font-size: 13px;
+  line-height: 1.55;
+  animation: cardIn 0.3s ease;
+}
+.chat-msg.user {
+  align-self: flex-end;
+  max-width: 85%;
+  padding: 9px 13px;
+  border-radius: 14px 14px 4px 14px;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.22), rgba(56, 189, 248, 0.1));
+  border: 1px solid color-mix(in srgb, var(--src-slack) 35%, transparent);
+  color: #fff;
+}
+.chat-msg.note {
+  color: var(--text-mid);
+  font-size: 12.5px;
+}
+.chat-msg.insight {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 15px;
+  border-radius: 6px 16px 16px 16px;
+  background: var(--glass-fill-strong);
+  border: 1px solid var(--glass-border);
+  border-left: 2px solid var(--accent);
+}
+.chat-msg.insight .insight-body {
+  flex: none;
+  max-height: 340px;
+  font-size: 13px;
+}
+.chat-msg.thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-mid);
+  padding: 4px 2px;
+}
+.tdot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--src-slack);
+  animation: bounce 1.1s ease infinite;
+}
+.tdot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.tdot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.tlabel {
+  margin-left: 8px;
+  font-size: 12.5px;
+}
+@keyframes bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+.recall-tag {
+  margin-left: 8px;
+  font-size: 10px;
+  color: var(--src-meetings);
+  letter-spacing: 0.02em;
+}
+
+/* Contact (email) chips (#6) */
+.contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.contacts-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-lo);
+}
+.contact-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 9px 12px;
+  border-radius: 11px;
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, var(--src-meetings) 45%, transparent);
+  background: color-mix(in srgb, var(--src-meetings) 12%, transparent);
+  transition: background 0.15s;
+}
+.contact-chip:hover {
+  background: color-mix(in srgb, var(--src-meetings) 22%, transparent);
+}
+.contact-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.contact-role {
+  font-size: 11px;
+  color: var(--text-mid);
+}
+.contact-email {
+  font-size: 11.5px;
+  color: var(--src-meetings);
+}
+
+/* Feedback row (#7) */
+.feedback-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-top: 3px;
+}
+.fb-btn {
+  padding: 6px 11px;
+  border-radius: 9px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-mid);
+  font-size: 12px;
+  cursor: pointer;
+}
+.fb-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.09);
+}
+.fb-done {
+  font-size: 12px;
+  color: var(--text-mid);
+}
+.fb-done.up {
+  color: var(--src-jira);
+}
+.fb-done.gone {
+  color: var(--text-lo);
+  font-style: italic;
+}
+
+/* Chat input */
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--glass-border);
+  flex-shrink: 0;
+}
+.chat-input {
+  flex: 1;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-hi);
+  font-size: 13px;
+  outline: none;
+}
+.chat-input:focus {
+  border-color: color-mix(in srgb, var(--src-slack) 55%, transparent);
+}
+.chat-send {
+  width: 42px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(180deg, var(--src-slack), #1d9bd6);
+  color: #04121c;
+  font-size: 15px;
+  cursor: pointer;
+}
+.chat-send:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── Ingest console (modal) ──────────────────────────────────────────────*/
+.ingest-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(3, 5, 10, 0.62);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+.ingest-console {
+  width: min(760px, 92vw);
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: cardIn 0.3s ease;
+}
+.ingest-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.ingest-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.ingest-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--type-contradiction);
+  box-shadow: 0 0 10px var(--type-contradiction);
+}
+.ingest-log {
+  flex: 1;
+  min-height: 220px;
+  overflow-y: auto;
+  padding: 18px;
+  font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--text-mid);
+}
+.ingest-intro {
+  color: var(--text-mid);
+  line-height: 1.6;
+}
+.ingest-intro code {
+  color: var(--src-slack);
+  font-size: 12px;
+}
+.ingest-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.ingest-line.start {
+  color: #fff;
+  font-weight: 600;
+}
+.ingest-line.done {
+  color: var(--src-jira);
+  font-weight: 600;
+}
+.ingest-line.error {
+  color: var(--type-blind_spot);
+}
+.ingest-cursor {
+  color: var(--src-slack);
+  animation: blink 1s steps(2) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+.ingest-actions {
+  padding: 14px 18px;
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+.ingest-run {
+  padding: 11px 20px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--type-contradiction) 45%, transparent);
+  background: color-mix(in srgb, var(--type-contradiction) 16%, transparent);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ingest-run.done {
+  border-color: color-mix(in srgb, var(--src-jira) 45%, transparent);
+  background: color-mix(in srgb, var(--src-jira) 16%, transparent);
+}
+.ingest-status {
+  font-size: 13px;
+  color: var(--text-mid);
 }

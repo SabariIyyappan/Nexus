@@ -6,6 +6,7 @@ export const SOURCE_COLORS: Record<string, string> = {
   support: "#fbbf24",
   code: "#a78bfa",
   meetings: "#2dd4bf",
+  directory: "#e879f9",
   unknown: "#94a3b8",
 };
 

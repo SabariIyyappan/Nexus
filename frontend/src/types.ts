@@ -1,4 +1,10 @@
-export type SourceType = "slack" | "jira" | "meetings" | "support" | "code";
+export type SourceType =
+  | "slack"
+  | "jira"
+  | "meetings"
+  | "support"
+  | "code"
+  | "directory";
 
 export interface GraphNode {
   id: string;
@@ -31,12 +37,25 @@ export type InsightType =
   | "hidden_expert"
   | "relevant";
 
+export interface Contact {
+  name: string;
+  email: string;
+  role?: string;
+}
+
 export interface Insight {
   context: string;
   insight_type: InsightType;
   insight: string;
   sources: string[];
   supporting: { source: string; text: string }[];
+  // People to contact, extracted from the insight text (#6). Surfaced as
+  // one-click mailto chips in the chat.
+  contacts: Contact[];
+  // Cognee session this interaction was remembered under (memory lifecycle).
+  session_id: string;
+  // True when the answer came from Cognee's recall() (auto-routed memory API).
+  from_recall?: boolean;
 }
 
 export interface Preset {

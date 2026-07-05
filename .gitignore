@@ -4,3 +4,7 @@
 .cognee_system/
 __pycache__/
 *.pyc
+
+# Planning / walkthrough docs (local only)
+PLAN.md
+DEMO_WALKTHROUGH.md

@@ -25,8 +25,9 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 COGNEE_SYSTEM_DIR = ROOT / ".cognee_system"
 COGNEE_DATA_DIR = ROOT / ".cognee_data"
 
-# All five demo datasets — the unified graph is built from these.
-DATASETS = ["slack", "jira", "meetings", "support", "code"]
+# All demo datasets — the unified graph is built from these. `directory` is a
+# team contact/expertise source so Cognee can surface who to contact and how.
+DATASETS = ["slack", "jira", "meetings", "support", "code", "directory"]
 
 
 async def setup_cognee() -> None:

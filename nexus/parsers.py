@@ -61,6 +61,7 @@ SOURCES = {
     "meetings": (parse_text_file, DATA_DIR / "meetings" / "meeting_notes.txt"),
     "support": (parse_text_file, DATA_DIR / "support" / "support_tickets.txt"),
     "code": (parse_text_file, DATA_DIR / "code" / "payments_refund.py"),
+    "directory": (parse_text_file, DATA_DIR / "directory" / "team_directory.txt"),
 }
 
 

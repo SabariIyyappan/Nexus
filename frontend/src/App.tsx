@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Constellation from "./components/Constellation";
 import NeuralBackground from "./components/NeuralBackground";
-import TriggerBar from "./components/TriggerBar";
-import InsightCard from "./components/InsightCard";
 import StatsFooter from "./components/StatsFooter";
-import Thinking from "./components/Thinking";
-import { fetchGraph, fetchPresets, fetchStats, trigger } from "./api";
+import ChatDock, { type ChatMessage } from "./components/ChatDock";
+import IngestConsole from "./components/IngestConsole";
+import {
+  fetchGraph,
+  fetchPresets,
+  fetchStats,
+  trigger,
+  sendFeedback,
+} from "./api";
 import type { GraphData, Insight, Preset, Stats } from "./types";
 import { SOURCE_COLORS } from "./theme";
 
@@ -13,7 +18,7 @@ import { SOURCE_COLORS } from "./theme";
 const STOP = new Set([
   "date", "person", "company", "service", "ticket", "team", "issue",
   "meeting", "customer", "client", "quarter", "endpoint", "api", "sla",
-  "concept", "role", "status", "priority",
+  "concept", "role", "status", "priority", "directory", "email",
 ]);
 
 /**
@@ -29,7 +34,6 @@ function computeActive(graph: GraphData, text: string) {
     if (n.type === "EntityType" || l.length < 4 || STOP.has(l)) continue;
     if (lower.includes(l)) hits.push({ id: n.id, val: n.val });
   }
-  // Cap labelled nodes to the most-connected matches so labels stay legible.
   hits.sort((a, b) => b.val - a.val);
   const labelIds = new Set(hits.slice(0, 8).map((h) => h.id));
   const hitSet = new Set(hits.map((h) => h.id));
@@ -44,51 +48,91 @@ function computeActive(graph: GraphData, text: string) {
   return { active, labelIds };
 }
 
+let msgSeq = 0;
+const nextId = () => `m${++msgSeq}`;
+
 export default function App() {
   const [graph, setGraph] = useState<GraphData | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [presets, setPresets] = useState<Preset[]>([]);
-  const [insight, setInsight] = useState<Insight | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [busy, setBusy] = useState(false);
-  const [pending, setPending] = useState("");
+  const [chatOpen, setChatOpen] = useState(true);
+  const [ingestOpen, setIngestOpen] = useState(false);
   const [activeIds, setActiveIds] = useState<Set<string>>(new Set());
   const [labelIds, setLabelIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
+  const loadGraph = useCallback(() => {
     fetchGraph().then(setGraph).catch(console.error);
     fetchStats().then(setStats).catch(console.error);
-    fetchPresets().then(setPresets).catch(console.error);
   }, []);
 
-  const onTrigger = useCallback(
-    async (body: { preset?: string; context?: string }) => {
-      if (!graph) return;
-      const label =
-        body.context ??
-        presets.find((p) => p.key === body.preset)?.label ??
-        "";
-      setPending(label);
+  useEffect(() => {
+    loadGraph();
+    fetchPresets().then(setPresets).catch(console.error);
+  }, [loadGraph]);
+
+  // Core flow: send a context (typed or preset) → insight → light the graph.
+  const runTrigger = useCallback(
+    async (body: { preset?: string; context?: string }, label: string) => {
+      if (busy) return;
+      setMessages((m) => [...m, { id: nextId(), role: "user", text: label }]);
       setBusy(true);
       setActiveIds(new Set());
       setLabelIds(new Set());
       try {
-        const res = await trigger(body);
-        setInsight(res);
-        const { active, labelIds } = computeActive(
-          graph,
-          res.insight + " " + res.context
-        );
-        setActiveIds(active);
-        setLabelIds(labelIds);
+        const res: Insight = await trigger(body);
+        setMessages((m) => [...m, { id: nextId(), role: "nexus", insight: res }]);
+        if (graph) {
+          const { active, labelIds } = computeActive(
+            graph,
+            res.insight + " " + res.context
+          );
+          setActiveIds(active);
+          setLabelIds(labelIds);
+        }
         fetchStats().then(setStats).catch(() => {});
       } catch (e) {
         console.error(e);
+        setMessages((m) => [
+          ...m,
+          { id: nextId(), role: "nexus", text: "⚠️ Something went wrong reaching Cognee." },
+        ]);
       } finally {
         setBusy(false);
       }
     },
-    [graph, presets]
+    [busy, graph]
   );
+
+  const onSend = useCallback((text: string) => runTrigger({ context: text }, text), [runTrigger]);
+  const onPreset = useCallback(
+    (key: string) => {
+      const label = presets.find((p) => p.key === key)?.label ?? key;
+      runTrigger({ preset: key }, label);
+    },
+    [presets, runTrigger]
+  );
+
+  const onFeedback = useCallback((msg: ChatMessage, useful: boolean) => {
+    if (!msg.insight) return;
+    sendFeedback(msg.insight.session_id, useful).catch(console.error);
+    setMessages((m) =>
+      m.map((x) => (x.id === msg.id ? { ...x, feedback: useful ? "up" : "down" } : x))
+    );
+  }, []);
+
+  // Dismiss is UI-only. (cognee.forget() is wired at POST /api/forget, but in
+  // local embedded mode it closes the vector adapter, so we don't call it from
+  // the live chat — see DEMO_WALKTHROUGH.md.)
+  const onDismiss = useCallback((msg: ChatMessage) => {
+    if (!msg.insight) return;
+    setMessages((m) =>
+      m.map((x) => (x.id === msg.id ? { ...x, feedback: "dismissed" } : x))
+    );
+    setActiveIds(new Set());
+    setLabelIds(new Set());
+  }, []);
 
   const clearHighlight = useCallback(() => {
     setActiveIds(new Set());
@@ -104,15 +148,16 @@ export default function App() {
     <>
       <NeuralBackground />
 
-      <div className="app">
+      <div className={`app ${chatOpen ? "chat-open" : ""}`}>
         <header className="topbar">
           <div className="glass brand">
             <h1>
               NEXUS<span className="dot">.</span>
             </h1>
-            <span className="tag">cross-silo intelligence · powered by Cognee</span>
           </div>
-          <TriggerBar presets={presets} busy={busy} onTrigger={onTrigger} />
+          <button className="glass ingest-btn" onClick={() => setIngestOpen(true)}>
+            <span className="ingest-btn-glyph">⚡</span> Ingest data
+          </button>
         </header>
 
         <main className="main">
@@ -125,6 +170,14 @@ export default function App() {
                   labelIds={labelIds}
                   onBackgroundClick={clearHighlight}
                 />
+                <div className="legend legend--graph">
+                  {legend.map(([name, color]) => (
+                    <span className="item" key={name} style={{ color }}>
+                      <i style={{ background: color }} />
+                      {name}
+                    </span>
+                  ))}
+                </div>
                 <div className="graph-hint">
                   {activeIds.size > 0
                     ? "Lit path = the connection Cognee traced · click empty space to reset"
@@ -138,34 +191,30 @@ export default function App() {
               </div>
             )}
           </section>
-
-          <aside className="insight-panel">
-            {busy ? (
-              <Thinking context={pending} />
-            ) : insight ? (
-              <InsightCard insight={insight} />
-            ) : (
-              <div className="glass hint">
-                <b>Trigger a context</b> to see what your team already knows across
-                Slack, Jira, support, meetings and code — connections nobody
-                thought to search for.
-              </div>
-            )}
-          </aside>
         </main>
 
         <footer className="footer-row">
           <StatsFooter stats={stats} />
-          <div className="glass legend">
-            {legend.map(([name, color]) => (
-              <span className="item" key={name} style={{ color }}>
-                <i style={{ background: color }} />
-                {name}
-              </span>
-            ))}
-          </div>
         </footer>
       </div>
+
+      <ChatDock
+        open={chatOpen}
+        onToggle={() => setChatOpen((o) => !o)}
+        messages={messages}
+        busy={busy}
+        presets={presets}
+        onSend={onSend}
+        onPreset={onPreset}
+        onFeedback={onFeedback}
+        onDismiss={onDismiss}
+      />
+
+      <IngestConsole
+        open={ingestOpen}
+        onClose={() => setIngestOpen(false)}
+        onComplete={loadGraph}
+      />
     </>
   );
 }
